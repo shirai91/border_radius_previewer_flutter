@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp());
@@ -58,6 +59,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return (value / 2).round().toString() + "%";
   }
 
+  String _getOutput() {
+    final radius = _getBorderRadius();
+    final topLeftH = _getLabel(_topRangeValues.start.round());
+    final topRightH = _getLabel(200 - _topRangeValues.end.round());
+    final bottomRightH = _getLabel(200 - _bottomRangeValues.end.round());
+    final bottomLeftH = _getLabel(_bottomRangeValues.start.round());
+
+    final topLeftV = _getLabel(_leftRangeValues.start.round());
+    final topRightV = _getLabel(_rightRangeValues.start.round());
+    final bottomRightV = _getLabel(_rightRangeValues.end.round());
+    final bottomLeftV = _getLabel(_leftRangeValues.end.round());
+
+    return '$topLeftH $topRightH $bottomRightH $bottomLeftH /$topLeftV $topRightV $bottomRightV $bottomLeftV';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,112 +82,135 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Stack(
-          fit: StackFit.expand,
-          alignment: Alignment.center,
-          children: <Widget>[
-            Positioned(
-                top: 0,
-                left: 70,
-                child: Container(
-                  width: 250,
-                  margin: EdgeInsets.zero,
-                  child: RangeSlider(
-                      values: _topRangeValues,
-                      min: 0,
-                      max: 200,
-                      divisions: 200,
-                      labels: RangeLabels(
-                          _getLabel(_topRangeValues.start.round()),
-                          _getLabel((200 - _topRangeValues.end).round())),
-                      onChanged: (RangeValues values) {
-                        setState(() {
-                          _topRangeValues = values;
-                        });
-                      }),
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              // Center is a layout widget. It takes a single child and positions it
+              // in the middle of the parent.
+              child: Stack(
+                fit: StackFit.expand,
+                alignment: Alignment.center,
+                children: <Widget>[
+                  Positioned(
+                      top: 0,
+                      left: 70,
+                      child: Container(
+                        width: 250,
+                        margin: EdgeInsets.zero,
+                        child: RangeSlider(
+                            values: _topRangeValues,
+                            min: 0,
+                            max: 200,
+                            divisions: 100,
+                            labels: RangeLabels(
+                                _getLabel(_topRangeValues.start.round()),
+                                _getLabel((200 - _topRangeValues.end).round())),
+                            onChanged: (RangeValues values) {
+                              setState(() {
+                                _topRangeValues = values;
+                              });
+                            }),
+                      )),
+                  Positioned(
+                      top: 255,
+                      left: 70,
+                      child: Container(
+                        margin: EdgeInsets.zero,
+                        width: 250,
+                        child: RangeSlider(
+                            values: _bottomRangeValues,
+                            min: 0,
+                            max: 200,
+                            divisions: 100,
+                            labels: RangeLabels(
+                                _getLabel(_bottomRangeValues.start.round()),
+                                _getLabel(
+                                    (200 - _bottomRangeValues.end).round())),
+                            onChanged: (RangeValues values) {
+                              setState(() {
+                                _bottomRangeValues = values;
+                              });
+                            }),
+                      )),
+                  Positioned(
+                      left: 93,
+                      top: 25,
+                      child: Transform(
+                        alignment: FractionalOffset.topLeft,
+                        transform: new Matrix4.identity()
+                          ..rotateZ(90 * 3.1415927 / 180),
+                        child: Container(
+                          width: 250,
+                          child: RangeSlider(
+                              values: _leftRangeValues,
+                              min: 0,
+                              max: 200,
+                              divisions: 100,
+                              labels: RangeLabels(
+                                  _getLabel(_leftRangeValues.start.round()),
+                                  _getLabel(
+                                      (200 - _leftRangeValues.end).round())),
+                              onChanged: (RangeValues values) {
+                                setState(() {
+                                  _leftRangeValues = values;
+                                });
+                              }),
+                        ),
+                      )),
+                  Positioned(
+                      left: 343,
+                      top: 25,
+                      child: Transform(
+                        alignment: FractionalOffset.topLeft,
+                        transform: new Matrix4.identity()
+                          ..rotateZ(90 * 3.1415927 / 180),
+                        child: Container(
+                          width: 250,
+                          child: RangeSlider(
+                              values: _rightRangeValues,
+                              min: 0,
+                              max: 200,
+                              divisions: 100,
+                              labels: RangeLabels(
+                                  _getLabel(_rightRangeValues.start.round()),
+                                  _getLabel(
+                                      (200 - _rightRangeValues.end).round())),
+                              onChanged: (RangeValues values) {
+                                setState(() {
+                                  _rightRangeValues = values;
+                                });
+                              }),
+                        ),
+                      )),
+                  Positioned(
+                      top: 40,
+                      left: 85,
+                      child: Container(
+                        width: 220,
+                        height: 220,
+                        decoration: BoxDecoration(
+                            borderRadius: _getBorderRadius(),
+                            color: Colors.amber),
+                      ))
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+                onTap: () {
+                  Clipboard.setData(new ClipboardData(
+                      text: 'border-radius: ' + _getOutput() + ';'));
+                  final snackBar = SnackBar(content: Text("Copied"));
+
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                },
+                child: Center(
+                  child: Text('border-radius: ' + _getOutput() + ';'),
                 )),
-            Positioned(
-                top: 255,
-                left: 70,
-                child: Container(
-                  margin: EdgeInsets.zero,
-                  width: 250,
-                  child: RangeSlider(
-                      values: _bottomRangeValues,
-                      min: 0,
-                      max: 200,
-                      divisions: 200,
-                      labels: RangeLabels(
-                          _getLabel(_bottomRangeValues.start.round()),
-                          _getLabel((200 - _bottomRangeValues.end).round())),
-                      onChanged: (RangeValues values) {
-                        setState(() {
-                          _bottomRangeValues = values;
-                        });
-                      }),
-                )),
-            Positioned(
-                left: 93,
-                top: 25,
-                child: Transform(
-                  alignment: FractionalOffset.topLeft,
-                  transform: new Matrix4.identity()
-                    ..rotateZ(90 * 3.1415927 / 180),
-                  child: Container(
-                    width: 250,
-                    child: RangeSlider(
-                        values: _leftRangeValues,
-                        min: 0,
-                        max: 200,
-                        divisions: 200,
-                        labels: RangeLabels(
-                            _getLabel(_leftRangeValues.start.round()),
-                            _getLabel((200 - _leftRangeValues.end).round())),
-                        onChanged: (RangeValues values) {
-                          setState(() {
-                            _leftRangeValues = values;
-                          });
-                        }),
-                  ),
-                )),
-            Positioned(
-                left: 343,
-                top: 25,
-                child: Transform(
-                  alignment: FractionalOffset.topLeft,
-                  transform: new Matrix4.identity()
-                    ..rotateZ(90 * 3.1415927 / 180),
-                  child: Container(
-                    width: 250,
-                    child: RangeSlider(
-                        values: _rightRangeValues,
-                        min: 0,
-                        max: 200,
-                        divisions: 200,
-                        labels: RangeLabels(
-                            _getLabel(_rightRangeValues.start.round()),
-                            _getLabel((200 - _rightRangeValues.end).round())),
-                        onChanged: (RangeValues values) {
-                          setState(() {
-                            _rightRangeValues = values;
-                          });
-                        }),
-                  ),
-                )),
-            Positioned(
-                top: 40,
-                left: 85,
-                child: Container(
-                  width: 220,
-                  height: 220,
-                  decoration: BoxDecoration(
-                      borderRadius: _getBorderRadius(), color: Colors.amber),
-                ))
-          ],
-        ),
+          )
+        ],
       ),
     );
   }
